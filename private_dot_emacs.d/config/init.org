@@ -190,10 +190,6 @@ files surrounded by #) in a specified directory
   (setq org-log-done t)
   (setq org-todo-keywords '((sequence "TODO(t)" "ONGOING(o)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
 
-  ;; (setq org-refile-targets '(("~/Documents/Org/todo.org" :maxlevel . 3)
-  ;;                            ("~/Documents/Org/someday.org" :level . 1)
-  ;;                            ("~/Documents/Org/tickler.org" :maxlevel . 2)
-  ;; 			   ("~/Documents/Org/meetings.org" :maxlevel . 5)))
   (setq org-archive-location "~/documents/org/archive/%s_archive::")
 
   (setq org-capture-templates '(("t" "Todo [inbox]" entry

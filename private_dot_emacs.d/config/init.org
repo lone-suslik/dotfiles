@@ -61,11 +61,12 @@
   (setq linum-format "%4d  ")
 #+end_src
 
-** follow symlinks without asking
+** handle symlinks
 
 #+begin_src emacs-lisp
-  (setq vc-follow-symlinks t)
-  (setq vc-handled-backends nil)
+  (setq vc-follow-symlinks t
+	vc-handled-backends nil
+	find-file-visit-truename t)
 #+end_src
 
 ** use 4 characters as default offset for c

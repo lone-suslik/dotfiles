@@ -817,6 +817,7 @@ Clone into user-libraries manually.
 
 #+begin_src emacs-lisp
   (use-package vertico
+    :ensure t
     :init
     (vertico-mode)
 

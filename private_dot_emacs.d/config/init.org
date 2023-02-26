@@ -11,6 +11,13 @@
     (package-refresh-contents))
 #+end_src
 
+** ensure use-package is available
+#+begin_src emacs-lisp
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package))
+  (require 'use-package)
+#+end_src
+
 ** set default frame size when opened in a window-system
 
 #+begin_src emacs-lisp

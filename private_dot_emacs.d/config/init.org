@@ -577,7 +577,7 @@ Described at https://emacs-lsp.github.io/lsp-mode/page/performance/
   (setq read-process-output-max (* 1024 1024))
 #+end_src
 
-** treemacs
+** treemacs & magit
 
 #+begin_src emacs-lisp
     (use-package treemacs

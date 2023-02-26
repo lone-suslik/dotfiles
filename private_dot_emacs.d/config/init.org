@@ -565,6 +565,7 @@ Slightly modified code from ref
     ((clojure-mode . turn-on-smartparens-mode)
      (emacs-lisp-mode . turn-on-smartparens-mode)))
 #+end_src
+
 ** change gc settings
 Described at https://emacs-lsp.github.io/lsp-mode/page/performance/
 

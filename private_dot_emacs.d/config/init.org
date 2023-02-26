@@ -877,7 +877,8 @@ Clone into user-libraries manually.
 This package enables an undo tree.
 
 #+begin_src emacs-lisp
-  (require 'vundo)
+  (use-package vundo
+    :ensure t)
   (global-set-key (kbd "C-,") 'vundo)
 
   (with-eval-after-load "org"

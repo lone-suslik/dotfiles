@@ -156,8 +156,9 @@ files surrounded by #) in a specified directory
 
 #+begin_src emacs-lisp
   (use-package citar
+    :ensure t
     :custom
-    (org-cite-global-bibliography '("~/documents/org/library.bib"))    
+    (org-cite-global-bibliography '("~/documents/org/library.bib"))
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
     (org-cite-activate-processor 'citar)

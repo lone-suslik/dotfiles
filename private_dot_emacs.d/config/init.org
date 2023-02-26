@@ -88,14 +88,21 @@ This code blocks stores backup files (usually files ending with ~ or
 files surrounded by #) in a specified directory
 
 #+begin_src emacs-lisp
-  (setq backup-directory-alist `(("." . "~/.emacs_backups")))
-  (setq backup-by-copying t)
-  (setq delete-old-versions t
+  (setq suslik-backup-dir "~/.emacs_backups"
+	suslik-autosave-dir "~/.emacs_autosaves/")
+
+  (setq backup-directory-alist `(("." . "~/.emacs_backups"))
+	backup-by-copying t
+	delete-old-versions t
 	kept-new-versions 6
 	kept-old-versions 2
-	version-control t)
-  (setq auto-save-file-name-transforms
-    `((".*" "~/.emacs_autosaves/" t)))
+	version-control t
+	auto-save-file-name-transforms `((".*" "~/.emacs_autosaves/" t)))
+
+  (unless (file-directory-p suslik-backup-dir)
+    (make-directory suslik-backup-dir t))
+  (unless (file-directory-p suslik-autosave-dir)
+    (make-directory suslik-autosave-dir t))
 #+end_src
 
 ** use doom modeline

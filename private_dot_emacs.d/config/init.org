@@ -175,6 +175,14 @@ files surrounded by #) in a specified directory
 #+end_src
 
 * org-mode
+** create org & roam directory 
+(otherwise bootstrap fails)
+#+begin_src emacs-lisp
+  (setq suslik-roam-dir "~/documents/org/roam")
+  (unless (file-directory-p suslik-roam-dir)
+    (make-directory suslik-roam-dir t))
+#+end_src
+
 ** org-mode
 
 #+begin_src emacs-lisp

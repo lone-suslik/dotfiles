@@ -867,9 +867,9 @@ Clone into user-libraries manually.
 #+end_src
 
 * whichkey
-
 #+begin_src emacs-lisp
-  (use-package which-key)
+  (use-package which-key
+    :ensure t)
   (which-key-mode)
 #+end_src
 

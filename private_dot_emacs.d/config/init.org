@@ -741,10 +741,9 @@ Described at https://emacs-lsp.github.io/lsp-mode/page/performance/
 * r/ess
 Ess nees to be installed from source (melpa version is too old).
 Clone into user-libraries manually.
-
 #+begin_src emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/user-libraries/ess/lisp")
-  (load "ess-autoloads")
+  (use-package ess
+    :ensure t)
   (require 'ess-r-mode)
 
   (add-hook 'ess-mode-hook #'lsp)

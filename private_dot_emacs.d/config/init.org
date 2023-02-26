@@ -462,9 +462,25 @@ Slightly modified code from ref
 #+end_src
 
 ** org-cite-csl-activate
-
 #+begin_src emacs-lisp
-  (add-to-list 'load-path "~/.emacs.d/user-libraries/org-cite-csl-activate")
+  (unless (file-exists-p (concat suslik-user-lib-dir
+				 (file-name-as-directory "org-cite-csl-activate")
+				 "oc-csl-activate.el"))
+    (progn
+      (setq oc-dirname
+	    (concat suslik-user-lib-dir
+		    (file-name-as-directory "org-cite-csl-activate")))
+      (unless (file-directory-p oc-dirname)
+	(progn
+	  (make-directory oc-dirname t)
+	  (setq oc-url "https://raw.githubusercontent.com/andras-simonyi/org-cite-csl-activate/9e68d9204469c674f49a20bdf7ea85da4f4bf720/oc-csl-activate.el")
+	  (url-copy-file oc-url (concat oc-dirname "oc-csl-activate.el"))
+	  ))))
+
+  (add-to-list 'load-path (concat suslik-user-lib-dir
+				  (file-name-as-directory "org-cite-csl-activate")))
+  (use-package citeproc
+    :ensure t)
 
   (require 'oc-csl-activate)
   (setq org-cite-activate-processor 'csl-activate)

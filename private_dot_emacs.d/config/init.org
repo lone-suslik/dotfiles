@@ -307,7 +307,9 @@ Setup the agenda directory. I use ~/Documents/org in all my systems.
 ** org-roam
 
 #+begin_src emacs-lisp
-  (require 'org-roam)
+  (use-package org-roam
+    :ensure t)
+
   (setq citar-notes-paths '("~/documents/org/roam/references"))
   (setq citar-file-note-extensions '("org"))
 #+end_src

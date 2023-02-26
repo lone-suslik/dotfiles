@@ -699,13 +699,14 @@ Described at https://emacs-lsp.github.io/lsp-mode/page/performance/
     :after (treemacs)
     :ensure t
     :config (lsp-treemacs-sync-mode 1))
-  
+
 #+end_src
 
 ** all the icons
 
 #+begin_src emacs-lisp
-  (use-package all-the-icons)
+  (use-package all-the-icons
+    :ensure t)
 #+end_src
 
 ** snakemake

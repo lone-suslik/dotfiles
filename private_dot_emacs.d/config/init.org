@@ -128,11 +128,21 @@ files surrounded by #) in a specified directory
   (global-set-key (kbd "C-c l") 'suslik/switch-language)
 #+end_src
 
+** make user-library directory if not exist
+#+begin_src emacs-lisp
+  (setq suslik-user-lib-dir
+	(concat user-emacs-directory
+		(file-name-as-directory "user-libraries")))
+  (unless (file-directory-p suslik-user-lib-dir)
+    (make-directory suslik-user-lib-dir t))
+#+end_src
 * theming / custom
 ** set theme
 
-#+begin_src emacs-lisp   
-   (load-theme 'monokai t)
+#+begin_src emacs-lisp
+    (use-package monokai-theme
+      :ensure t)
+    (load-theme 'monokai t)
 #+end_src
 
 ** set font

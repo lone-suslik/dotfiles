@@ -136,6 +136,7 @@ files surrounded by #) in a specified directory
   (unless (file-directory-p suslik-user-lib-dir)
     (make-directory suslik-user-lib-dir t))
 #+end_src
+
 * theming / custom
 ** set theme
 
@@ -755,7 +756,6 @@ Clone into user-libraries manually.
 	      (setq ess-ask-for-ess-directory nil)
 	      (define-key ess-mode-map (kbd "C-j") 'ess-eval-region-or-line-and-step)))
   ;; (define-key ess-r-mode-map(kbd "C-j") ')
-
 #+end_src
 
 * marginalia

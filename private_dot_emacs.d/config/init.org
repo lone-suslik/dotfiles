@@ -1,0 +1,1091 @@
+* emacs
+** package: refresh package content on load
+
+#+begin_src emacs-lisp
+  (when (not package-archive-contents)
+    (package-refresh-contents))
+#+end_src
+
+** set default frame size when opened in a window-system
+
+#+begin_src emacs-lisp
+  (when window-system (set-frame-size (selected-frame) 80 47))
+  (when window-system (set-frame-position (selected-frame) 40 30))
+#+end_src
+
+** rebind C-h ahd help-command
+
+#+begin_src emacs-lisp
+  (keyboard-translate ?\C-h ?\C-?) ;; some basic keyboard stuff, don't remove (written by Petr on 24 of June, 2019)
+  (global-set-key [?\C-x ?h] 'help-command)
+#+end_src
+
+** inhibit startup screen
+
+#+begin_src emacs-lisp
+  (setq inhibit-startup-screen t)
+#+end_src
+
+** inhibit startup message
+
+#+begin_src emacs-lisp
+  (setq inhibit-startup-message t)
+  (setq inhibit-startup-echo-area-message t)
+#+end_src
+
+** remove default message in scratch buffer
+
+#+begin_src emacs-lisp
+  (setq initial-scratch-message nil)
+#+end_src
+
+** change yes/no into y/n for answering yes/no questions
+
+#+begin_src emacs-lisp
+  (fset 'yes-or-no-p 'y-or-n-p)
+#+end_src
+
+** use GNU ls on darwin for dired
+
+#+begin_src emacs-lisp
+  (when (string= system-type "darwin")
+    (setq dired-use-ls-dired t
+	  insert-directory-program "/usr/local/bin/gls"
+	  dired-listing-switches "-aBhl --group-directories-first"))
+#+end_src
+
+** enable linum mode by default
+
+#+begin_src emacs-lisp
+  (global-linum-mode t)
+  (setq linum-format "%4d  ")
+#+end_src
+
+** follow symlinks without asking
+
+#+begin_src emacs-lisp
+  (setq vc-follow-symlinks t)
+  (setq vc-handled-backends nil)
+#+end_src
+
+** use 4 characters as default offset for c
+
+#+begin_src emacs-lisp  
+   (setq-default c-basic-offset 4)
+#+end_src
+
+** hide menu bar, toolbar and scrollbar
+
+#+begin_src emacs-lisp
+  (menu-bar-mode -1)
+  (tool-bar-mode -1)
+  (toggle-scroll-bar -1)
+  (add-hook 'server-after-make-frame-hook (lambda () (toggle-scroll-bar -1)))
+#+end_src
+
+** set custom emacs backup locations
+This code blocks stores backup files (usually files ending with ~ or
+files surrounded by #) in a specified directory
+
+#+begin_src emacs-lisp
+  (setq backup-directory-alist `(("." . "~/.emacs_backups")))
+  (setq backup-by-copying t)
+  (setq delete-old-versions t
+	kept-new-versions 6
+	kept-old-versions 2
+	version-control t)
+  (setq auto-save-file-name-transforms
+    `((".*" "~/.emacs_autosaves/" t)))
+#+end_src
+
+** use doom modeline
+
+#+begin_src emacs-lisp
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1))
+
+  (setq doom-modeline-vcs-max-length 12)
+#+end_src
+
+** switching eng-ru in the background
+
+#+begin_src emacs-lisp
+  (set-input-method "ucs") ;; set the default input method on load, otherwise it can be nil and break the function below
+
+  (defun suslik/switch-language ()
+    (interactive (if (string-equal "russian-computer" default-input-method)
+	(set-input-method "ucs")
+	(set-input-method "russian-computer"))))
+
+  (global-set-key (kbd "C-c l") 'suslik/switch-language)
+#+end_src
+
+* theming / custom
+** set theme
+
+#+begin_src emacs-lisp   
+   (load-theme 'monokai t)
+#+end_src
+
+** set font
+
+#+begin_src emacs-lisp
+  (add-to-list 'default-frame-alist
+	       '(font . "Hasklug Nerd Font-15"))
+#+end_src
+
+* citar
+
+#+begin_src emacs-lisp
+  (use-package citar
+    :custom
+    (org-cite-global-bibliography '("~/documents/org/library.bib"))    
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    (citar-bibliography org-cite-global-bibliography)
+
+    :bind
+    (:map org-mode-map :package org ("C-c r" . #'org-cite-insert)))
+
+  (setq citar-templates
+	'((main . "${author:15} (${date year issued:4}): ${title}" )
+	  (suffix . "${author:15} (${date year issued:4}): ${title}")
+	  (preview . "${author:15} (${date year issued:4}): ${title}")
+	  (note . "${author:15} (${date year issued:4}): ${title}")))
+#+end_src
+
+* org-mode
+** org-mode
+
+#+begin_src emacs-lisp
+  (require 'org-inlinetask)
+  (setq org-log-done t)
+  (setq org-todo-keywords '((sequence "TODO(t)" "ONGOING(o)" "WAITING(w)" "|" "DONE(d)" "CANCELLED(c)")))
+
+  ;; (setq org-refile-targets '(("~/Documents/Org/todo.org" :maxlevel . 3)
+  ;;                            ("~/Documents/Org/someday.org" :level . 1)
+  ;;                            ("~/Documents/Org/tickler.org" :maxlevel . 2)
+  ;; 			   ("~/Documents/Org/meetings.org" :maxlevel . 5)))
+  (setq org-archive-location "~/documents/org/archive/%s_archive::")
+
+  (setq org-capture-templates '(("t" "Todo [inbox]" entry
+				 (file+headline "~/documents/org/inbox.org" "Tasks")
+				 "* TODO %i%?")
+				("n" "note" entry
+				 (file+headline "~/documents/org/notes.org" "Notes")
+				 "* %U\n%?")))
+
+  (add-hook 'org-mode-hook 'turn-on-auto-fill)
+  (add-hook 'org-mode-hook (lambda () (linum-mode 0)))
+#+end_src
+
+** org-mode keybindings
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c c") 'org-capture)
+  (global-set-key (kbd "C-c a") 'org-agenda)
+  (global-set-key (kbd "C-c t") 'org-insert-structure-template)
+  (global-set-key (kbd "C-c z") 'org-cycle-agenda-files)
+  (global-set-key (kbd "C-c C-.") 'org-time-stamp-inactive)
+  (global-set-key (kbd "C-c k") 'org-set-tags-command)
+  ;; (global-set-key (kbd "C-c C-w") 'org-refile-targets)  
+#+end_src
+
+** org-mode alignment of tags
+
+#+begin_src emacs-lisp
+  (setq org-tags-column -140)
+#+end_src
+
+** ensure folding by default
+
+#+begin_src emacs-lisp
+  (setq org-startup-folded t)
+#+end_src
+
+** code editing in Babel blocks
+
+#+begin_src
+  (setq org-src-tab-acts-natively t)
+#+end_src
+
+** configure Babel languages
+
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((R . t)
+     (emacs-lisp . nil)
+     (python . t)))
+#+end_src
+
+** allow images in emacs buffer
+
+#+begin_src emacs-lisp
+  (setq org-startup-with-inline-images t)
+  (setq org-redisplay-inline-images t)
+#+end_src
+
+** change behaviour of org-goto
+#+begin_src emacs-lisp
+  (setq org-goto-interface (quote outline-path-completion))
+#+end_src
+
+** org-agenda
+
+Setup the agenda directory. I use ~/Documents/org in all my systems.
+
+#+begin_src emacs-lisp
+  (setq org-directory (quote "~/documents/org"))
+  (setq org-agenda-files '(org-directory))
+  (setq org-agenda-files (directory-files-recursively org-directory "org$"))
+#+end_src
+
+*** custom org-agenda view for work
+
+#+begin_src emacs-lisp
+  (setq org-agenda-custom-commands
+	'(("w"
+	   "work agenda"
+	   ((agenda ""
+		    ((org-agenda-span 2)))
+	    (todo "TODO"
+		  ((org-agenda-overriding-header "Todos")
+		   (org-agenda-sorting-strategy '(tag-down))))
+	    (todo "WAITING"
+		  ((org-agenda-overriding-header "Blocked"))))
+	   ((org-agenda-tag-filter-preset '("-@personal" "-@personsal"))))))
+#+end_src
+
+*** org-agenda column-mode
+
+#+begin_src emacs-lisp
+  ;; (setq org-agenda-view-columns-initially f)
+  ;; (setq org-columns-default-format "%20CATEGORY %TODO %80ITEM %3PRIORITY %TAGS")
+#+end_src
+
+*** show tags in column mode in agenda
+
+#+begin_src emacs-lisp
+  (setq org-agenda-tags-column -140)
+#+end_src
+
+** bibtex completion display formats
+
+#+begin_src emacs-lisp  
+  (setq bibtex-completion-display-formats
+	'((main . "${author:15} (${date year issued:4}): ${title}")
+	  (suffix . "")
+	  (preview . "")
+	  (note . "")))
+#+end_src
+
+** org-roam
+
+#+begin_src emacs-lisp
+  (require 'org-roam)
+  (setq citar-notes-paths '("~/documents/org/roam/references"))
+  (setq citar-file-note-extensions '("org"))
+#+end_src
+
+*** org-roam directory & basic configs
+
+#+begin_src emacs-lisp  
+  (setq org-roam-directory (file-truename "~/documents/org/roam"))
+  (setq org-roam-db-location "~/documents/org/roam/roam.db")
+  (org-roam-db-autosync-mode)
+  (setq org-roam-completion-everywhere t)
+#+end_src
+
+*** org-roam keybindings
+
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-c f") 'org-roam-node-find)
+  (global-set-key (kbd "C-c i") 'org-roam-node-insert)
+  (global-set-key (kbd "C-c s") 'org-roam-capture)
+  (global-set-key (kbd "C-c b") 'org-roam-buffer-toggle)
+  (global-set-key (kbd "C-c j") 'org-roam-refile)
+  (define-key org-roam-mode-map (kbd "C-c C-o") 'org-open-at-point)
+#+end_src
+
+*** org-roam buffer
+
+#+begin_src emacs-lisp
+  (setq org-roam-mode-sections
+	(list #'org-roam-backlinks-section
+	      #'org-roam-reflinks-section))  
+#+end_src
+
+*** org-open in the same window
+Default option is to split screen and open the link in another window.
+
+#+begin_src emacs-lisp
+  (setf (cdr (assoc 'file org-link-frame-setup)) 'find-file)
+#+end_src
+
+*** org-roam capture templates
+:PROPERTIES:
+:ORDERED:  t
+:END:
+
+- references/${title}.org. <- References go here. These are papers or
+  books I read. 1 file per reference. If it is a book I want to read,
+  just add a reference and create a TODO item (consider how to filter
+  them out in agenda)
+- topics/${topics}.org: Knowledge graph / Zettelkasten / permanent
+  notes on various topics
+- notes/${title}.org <- fleeting notes
+- recurrent/${title}.org <- recurrent events (group meetings, journal
+  clubs, 1:1s)
+- people/${title}.org <- all personal info on people. This includes
+  recruitment - then people's files can be linked from the
+  recruitment campaign page.
+- projects/${title}.org <- individual projects, including recruitment campaings, purchases etc
+- writing/${title}.org <- my short and long-form writings
+	      
+#+begin_src emacs-lisp
+    (setq org-roam-capture-templates
+	'(
+	  ("t" "topic" plain
+	   "%?"
+	   :if-new (file+head "topics/${slug}.org"
+			      "#+title: ${title}")
+	   :immediate-finish t
+	   :unnarrowed t)
+	  ("m" "meetings" plain "%?"
+	   :if-new (file+head "meetings/${slug}.org"
+			      "#+title: ${title}")			    
+	   :immediate-finish t
+	   :unnarrowed t)
+	  ("p" "person" plain "%?"
+	   :if-new (file+head "people/${slug}.org"
+			      "#+title: ${title}")			    
+	   :immediate-finish t
+	   :unnarrowed t)
+	  ("j" "project" plain "%?"
+	   :if-new (file+head "projects/${slug}.org"
+			      "#+title: ${title}")
+	   :immediate-finish t
+	   :unnarrowed t)		
+	  ("w" "writing" plain "%?"
+	   :if-new (file+head "writings/${slug}.org"
+			      "#+title: ${title}")
+	   :immediate-finish t
+	   :unnarrowed t)))
+#+end_src
+
+*** add 'type' propoperty and show file type in completion buffer
+
+#+begin_src emacs-lisp
+  (cl-defmethod org-roam-node-type ((node org-roam-node))
+    "Return the TYPE of NODE."
+    (condition-case nil
+	(file-name-nondirectory
+	 (directory-file-name
+	  (file-name-directory
+	   (file-relative-name (org-roam-node-file node) org-roam-directory))))
+      (error "")))
+
+  (setq org-roam-node-display-template
+      (concat "${type:15} ${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
+#+end_src
+
+*** function to capture references directly from citar
+Slightly modified code from ref
+
+#+begin_src emacs-lisp
+
+    (defun suslik/org-roam-node-from-cite (keys-entries)
+      (interactive (list (citar-get-entry (citar-select-ref))))
+      (let ((title (replace-regexp-in-string "-[[:digit:]]+" "" (citar-format--entry
+								 "${author} - (${date}) - ${title}"
+								 (cdr keys-entries))))
+	    (key (citar-format--entry "${=key=}"
+				      (cdr keys-entries))))
+	(message key)
+	(org-roam-capture- :templates
+			   '(("r" "reference" plain "%?" :if-new
+			      (file+head "references/${citekey}.org"
+					 ":PROPERTIES:
+
+:ROAM_REFS: [cite:@${citekey}]
+:END:
+#+title: ${title}\n")
+			      :unnarrowed t))
+			   :info (list :citekey key)
+			   :node (org-roam-node-create :title title)
+			   :props '(:finalize find-file))))
+#+end_src
+
+*** unique links in org-roam session buffer
+
+#+begin_src emacs-lisp
+  (setq org-roam-mode-sections
+	'((org-roam-backlinks-section :unique t)
+	  org-roam-reflinks-section))
+#+end_src
+
+
+** roam and org tags
+
+#+begin_src emacs-lisp
+  (setq org-tag-alist '((:startgroup . nil)
+                      ("@az" . ?a) ("@work" . ?w) ("@personal" . ?p)
+                      (:endgroup . nil)
+                      ("@urgent" . ?u) ("@important" . ?i)))
+#+end_src
+
+** org-cite-csl-activate
+
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/user-libraries/org-cite-csl-activate")
+
+  (require 'oc-csl-activate)
+  (setq org-cite-activate-processor 'csl-activate)
+  (setq org-cite-csl-activate-use-citar-cache t)
+  (add-hook 'org-mode-hook (lambda () (cursor-sensor-mode 1)))
+  (add-hook 'org-mode-hook (lambda () (org-cite-csl-activate-render-all)))
+#+end_src
+
+* company
+
+#+begin_src emacs-lisp
+  (use-package company
+    :after lsp-mode
+    :hook (lsp-mode . company-mode))
+  (setq company-minimum-prefix-length 1
+	company-idle-delay 0.0) ;; default is 0.2
+
+    ;; ;;
+    ;; (global-set-key (kbd "<tab>") #'company-indent-or-complete-common) - this thing breaks autocompletion
+
+  ;; (use-package company-box
+  ;;   :hook (company-mode . company-box-mode))
+#+end_src
+
+* lsp and languages
+** flycheck
+
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :ensure t
+    :init (global-flycheck-mode))
+#+end_src
+
+** lsp-mode
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :ensure t
+    :diminish LSP " λσπ"
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    (setq lsp-headerline-breadcrumb-icons-enable t)
+    (setq lsp-headerline-breadcrumb-mode '(project file symbols))
+    :config
+    (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
+    (dolist (m '(clojure-mode
+		 clojurec-mode
+		 clojurescript-mode
+		 clojurex-mode))
+      (add-to-list 'lsp-language-id-configuration `(,m . "clojure")))
+    :hook
+    ((lsp-mode . lsp-enable-which-key-integration)
+     (python-mode . lsp)
+     (clojure-mode . lsp)
+     (clojurec-mode . lsp)
+     (cojurescript-mode . lsp)))
+
+  (use-package lsp-ui
+    :ensure t
+    :commands lsp-ui-mode
+    :config
+    (setq lsp-ui-sideline-show-hover t)
+    (setq lsp-ui-sideline-show-diagnostics t)
+    (setq lsp-ui-sideline-show-code-actions t)
+    (setq lsp-ui-doc-enable t)
+    (setq lsp-ui-doc-show-with-cursor t))
+#+end_src
+
+** lisp & clojure
+*** CIDER
+#+begin_src emacs-lisp
+  (use-package cider
+    :ensure t)
+#+end_src
+
+*** smartparens
+#+begin_src emacs-lisp
+  (use-package smartparens
+    :ensure t
+    :init
+    (require 'smartparens-config)
+    :hook
+    ((clojure-mode . turn-on-smartparens-mode)
+     (emacs-lisp-mode . turn-on-smartparens-mode)))
+#+end_src
+** change gc settings
+Described at https://emacs-lsp.github.io/lsp-mode/page/performance/
+
+#+begin_src emacs-lisp
+  (setq gc-cons-threshold 400000000)
+#+end_src
+
+#+begin_src emacs-lisp
+  (setq read-process-output-max (* 1024 1024))
+#+end_src
+
+** treemacs
+
+#+begin_src emacs-lisp
+    (use-package treemacs
+    :ensure t
+    :defer t
+    :init
+    (with-eval-after-load 'winum
+      (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+    :config
+    (progn
+      (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+	    treemacs-deferred-git-apply-delay        0.5
+	    treemacs-directory-name-transformer      #'identity
+	    treemacs-display-in-side-window          t
+	    treemacs-eldoc-display                   'simple
+	    treemacs-file-event-delay                2000
+	    treemacs-file-extension-regex            treemacs-last-period-regex-value
+	    treemacs-file-follow-delay               0.2
+	    treemacs-file-name-transformer           #'identity
+	    treemacs-follow-after-init               t
+	    treemacs-expand-after-init               t
+	    treemacs-find-workspace-method           'find-for-file-or-pick-first
+	    treemacs-git-command-pipe                ""
+	    treemacs-goto-tag-strategy               'refetch-index
+	    treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+	    treemacs-hide-dot-git-directory          t
+	    treemacs-indentation                     2
+	    treemacs-indentation-string              " "
+	    treemacs-is-never-other-window           nil
+	    treemacs-max-git-entries                 5000
+	    treemacs-missing-project-action          'ask
+	    treemacs-move-forward-on-expand          nil
+	    treemacs-no-png-images                   nil
+	    treemacs-no-delete-other-windows         t
+	    treemacs-project-follow-cleanup          nil
+	    treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+	    treemacs-position                        'left
+	    treemacs-read-string-input               'from-child-frame
+	    treemacs-recenter-distance               0.1
+	    treemacs-recenter-after-file-follow      nil
+	    treemacs-recenter-after-tag-follow       nil
+	    treemacs-recenter-after-project-jump     'always
+	    treemacs-recenter-after-project-expand   'on-distance
+	    treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+	    treemacs-project-follow-into-home        nil
+	    treemacs-show-cursor                     nil
+	    treemacs-show-hidden-files               t
+	    treemacs-silent-filewatch                nil
+	    treemacs-silent-refresh                  nil
+	    treemacs-sorting                         'alphabetic-asc
+	    treemacs-select-when-already-in-treemacs 'move-back
+	    treemacs-space-between-root-nodes        t
+	    treemacs-tag-follow-cleanup              t
+	    treemacs-tag-follow-delay                1.5
+	    treemacs-text-scale                      nil
+	    treemacs-user-mode-line-format           nil
+	    treemacs-user-header-line-format         nil
+	    treemacs-wide-toggle-width               70
+	    treemacs-width                           35
+	    treemacs-width-increment                 1
+	    treemacs-width-is-initially-locked       t
+	    treemacs-workspace-switch-cleanup        nil)
+
+      ;; The default width and height of the icons is 22 pixels. If you are
+      ;; using a Hi-DPI display, uncomment this to double the icon size.
+      ;;(treemacs-resize-icons 44)
+
+      (treemacs-follow-mode t)
+      (treemacs-filewatch-mode t)
+      (treemacs-fringe-indicator-mode 'always)
+      (when treemacs-python-executable
+	(treemacs-git-commit-diff-mode t))
+
+      (pcase (cons (not (null (executable-find "git")))
+		   (not (null treemacs-python-executable)))
+	(`(t . t)
+	 (treemacs-git-mode 'deferred))
+	(`(t . _)
+	 (treemacs-git-mode 'simple)))
+
+      (treemacs-hide-gitignored-files-mode nil))
+    :bind
+    (:map global-map
+	  ("M-0"       . treemacs-select-window)
+	  ("C-x t 1"   . treemacs-delete-other-windows)
+	  ("C-x t t"   . treemacs)
+	  ("C-x t d"   . treemacs-select-directory)
+	  ("C-x t B"   . treemacs-bookmark)
+	  ("C-x t C-t" . treemacs-find-file)
+	  ("C-x t M-t" . treemacs-find-tag)))
+
+  (use-package treemacs-evil
+    :after (treemacs evil)
+    :ensure t)
+
+  (use-package treemacs-projectile
+    :after (treemacs projectile)
+    :ensure t)
+
+  (use-package treemacs-icons-dired
+    :hook (dired-mode . treemacs-icons-dired-enable-once)
+    :ensure t)
+
+  (use-package treemacs-magit
+    :after (treemacs magit)
+    :ensure t)
+
+  (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+    :ensure t
+    :config (treemacs-set-scope-type 'Perspectives))
+
+  (use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+    :after (treemacs)
+    :ensure t
+    :config (treemacs-set-scope-type 'Tabs))
+
+  (use-package lsp-treemacs
+    :after (treemacs)
+    :ensure t
+    :config (lsp-treemacs-sync-mode 1))
+  
+#+end_src
+
+** all the icons
+
+#+begin_src emacs-lisp
+  (use-package all-the-icons)
+#+end_src
+
+** snakemake
+*** TODO Fix and ensure snakemake-mode works
+
+#+begin_src emacs-lisp
+
+  ;; ---------------------
+  ;; ------ Extension to mode mapping
+  ;; ---------------------
+  ;; (add-to-list 'auto-mode-alist '("\\.sf\\'" . elpy-enable))
+  ;; (add-to-list 'auto-mode-alist '("\\.sf\\'" . snakemake-mode))
+
+#+end_src
+
+* projectile
+
+#+begin_src emacs-lisp
+  ;; ---------------------
+  ;; ---- Projectile -----
+  ;; ---------------------
+  (require 'projectile)
+  (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
+  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+
+  (add-to-list 'projectile-globally-ignored-directories "Downloads")
+
+  (projectile-mode +1)
+
+#+end_src
+
+* r/ess
+Ess nees to be installed from source (melpa version is too old).
+Clone into user-libraries manually.
+
+#+begin_src emacs-lisp
+  (add-to-list 'load-path "~/.emacs.d/user-libraries/ess/lisp")
+  (load "ess-autoloads")
+  (require 'ess-r-mode)
+
+  (add-hook 'ess-mode-hook #'lsp)
+  (add-hook 'ess-mode-hook
+	    (lambda ()
+	      (setq-local split-width-threshold 0)
+	      (ess-set-style 'RStudio)
+	      (ess-toggle-underscore nil)
+	      (setq ess-ask-for-ess-directory nil)
+	      (define-key ess-mode-map (kbd "C-j") 'ess-eval-region-or-line-and-step)))
+  ;; (define-key ess-r-mode-map(kbd "C-j") ')
+
+#+end_src
+
+* marginalia
+
+#+begin_src emacs-lisp
+  (use-package marginalia
+    :ensure t
+    :config
+    (marginalia-mode))
+#+end_src
+
+* embark
+
+#+begin_src emacs-lisp
+  (use-package embark
+    :ensure t
+    :bind
+    (("C-c m" . embark-act)         ;; pick some comfortable binding
+     ("M-." . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+    :init
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
+    :config
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+		 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+		   nil
+		   (window-parameters (mode-line-format . none)))))
+
+#+end_src
+
+* embark-consult
+
+#+begin_src emacs-lisp
+  (use-package embark-consult
+    :ensure t
+    :after (embark consult)
+    :demand t ; only necessary if you have the hook below
+    ;; if you want to have consult previews as you move around an
+    ;; auto-updating embark collect buffer
+    :hook
+    (embark-collect-mode . consult-preview-at-point-mode))
+
+#+end_src
+
+* orderless
+
+#+begin_src emacs-lisp
+  (use-package orderless
+    :ensure t
+    :init
+    (setq completion-styles '(orderless basic)
+	  completion-category-defaults nil
+	  completion-category-overrides '((file (styles partial-completion)))))
+#+end_src
+
+* vertico
+
+#+begin_src emacs-lisp
+  (use-package vertico
+    :init
+    (vertico-mode)
+
+    ;; Different scroll margin
+    (setq vertico-scroll-margin 0)
+
+    ;; Show more candidates
+    (setq vertico-count 20)
+
+    ;; Grow and shrink the Vertico minibuffer
+    ;; (setq vertico-resize t)
+
+    ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+    ;; (setq vertico-cycle t)
+    )
+#+end_src
+
+** preserve vertico history over emacs restarts
+
+#+begin_src emacs-lisp
+  ;; Persist history over Emacs restarts. Vertico sorts by history position.
+  (use-package savehist
+    :init
+    (savehist-mode))
+
+  ;; A few more useful configurations...
+  (use-package emacs
+    :init
+    ;; Add prompt indicator to `completing-read-multiple'.
+    ;; Alternatively try `consult-completing-read-multiple'.
+    (defun crm-indicator (args)
+      (cons (concat "[CRM] " (car args)) (cdr args)))
+    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+    ;; Do not allow the cursor in the minibuffer prompt
+    (setq minibuffer-prompt-properties
+	  '(read-only t cursor-intangible t face minibuffer-prompt))
+    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+    ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+    ;; Vertico commands are hidden in normal buffers.
+     (setq read-extended-command-predicate
+	   #'command-completion-default-include-p)
+
+    ;; Enable recursive minibuffers
+    (setq enable-recursive-minibuffers t))
+#+end_src
+
+* whichkey
+
+#+begin_src emacs-lisp
+  (use-package which-key)
+  (which-key-mode)
+#+end_src
+
+* vundo
+This package enables an undo tree.
+
+#+begin_src emacs-lisp
+  (require 'vundo)
+  (global-set-key (kbd "C-,") 'vundo)
+
+  (with-eval-after-load "org"
+    (define-key org-mode-map (kbd "C-,") #'vundo))
+
+  (define-key vundo-mode-map (kbd "l") #'vundo-forward)
+  (define-key vundo-mode-map (kbd "j") #'vundo-backward)
+  (define-key vundo-mode-map (kbd "i") #'vundo-previous)
+  (define-key vundo-mode-map (kbd "k") #'vundo-next)
+  (define-key vundo-mode-map (kbd "q") #'vundo-quit)
+#+end_src
+
+* keymap
+This is a weird and a very personal key-binding that binds
+M-<ijkl> keys to navigation (similar to wasd but for the right hand).
+
+add paragraph navigation to M- ... keys
+
+#+begin_src emacs-lisp
+  ;; (require 'bind-key)
+
+  ;; (bind-key* "M-i" 'previous-line)
+  ;; (bind-key* "M-k" 'next-line)
+  ;; (bind-key* "M-j" 'backward-char)
+  ;; (bind-key* "M-l" 'forward-char)
+#+end_src
+
+* interaction log
+#+begin_src emacs-lisp
+  (use-package interaction-log
+    :ensure t)
+  (interaction-log-mode +1)
+#+end_src
+
+* disabled
+This is a dump for old disabled config snippets
+
+** make org use symbols instead of bullets
+
+# #+begin_src emacs-lisp
+#   (require 'org-superstar)
+#   (add-hook 'org-mode-hook (lambda () (org-superstar-mode 1)))
+
+#   (setq org-superstar-remove-leading-stars t)
+#   (setq org-superstar-headline-bullet-list '("◉" "○" "●" "○" "●" "○" "●"))
+# #+end_src
+
+** mu4e
+# #+begin_src emacs-lisp
+
+#   ;; ---------------------
+#   ;; -------- mu4e--------
+#   ;; ---------------------
+#   (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+#   (use-package mu4e
+#     :config
+#     ;; Update mail using 'U' in main view:
+#     (setq mu4e-root-maildir "~/.mail")
+#     (setq mu4e-get-mail-command "offlineimap")
+#     (setq mu4e-view-show-addresses t)
+#     (setq mu4e-attachment-dir (expand-file-name "~/Downloads/"))
+#     (setq mu4e-maildir "~/.mail")
+#     (setq mu4e-html2text-command "w3m -T text/html") ;; alternatively "textutil -stdin -format html -convert txt -stdout"
+#     (setq mu4e-context-policy 'pick-first)
+#     (setq mu4e-compose-context-policy 'always-ask)
+#   (setq mu4e-contexts
+# 	  (list
+# 	   (make-mu4e-context
+# 	    :name "protonmail"
+# 	    :enter-func (lambda () (mu4e-message "Entering context petr.volkov@protonmail.com"))
+# 	    :leave-func (lambda () (mu4e-message "Leaving context petr.volkov@protonmail.com"))
+# 	    :match-func (lambda (msg)
+# 			  (when msg
+# 			    (mu4e-message-contact-field-matches
+# 			     msg '(:from :to :cc :bcc) "petr.volkov@protonmail.com")))
+# 	    :vars '((user-mail-address . "petr.volkov@protonmail.com")
+# 		    (user-full-name . "Petr")
+# 		    (mu4e-sent-folder . "/Sent")
+# 		    (mu4e-drafts-folder . "/Drafts")
+# 		    (mu4e-trash-folder . "/Trash")))
+# 	   )
+# 	  ))
+
+# #+end_src
+
+** ivy
+# #+begin_src emacs-lisp
+#   (use-package ivy
+#     :diminish
+#     ;; :bind (("C-s" . swiper)
+#     ;; 	 :map ivy-minibuffer-map
+#     ;; 	 ("TAB" . ivy-alt-done)
+#     ;; 	 ("C-l" . ivy-alt-done)
+#     ;; 	 ("C-j" . ivy-next-line)
+#     ;; 	 ("C-k" . ivy-previous-line)
+#     ;; 	 :map ivy-switch-buffer-map
+#     ;; 	 ("C-k" . ivy-previous-line)
+#     ;; 	 ("C-l" . ivy-done)
+#     ;; 	 ("C-d" . ivy-switch-buffer-kill)
+#     ;; 	 :map ivy-reverse-i-search-map
+#     ;; 	 ("C-k" . ivy-previous-line)
+#     ;; 	 ("C-d" . ivy-reverse-i-search-kill))
+#     :init
+#     (ivy-mode 1)
+#     :config)
+
+# #+end_src
+** helm
+
+#+begin_src emacs-lisp
+
+  ;; ---------------------
+  ;; --------- Helm ------
+  ;; ---------------------
+  ;; (require 'helm)
+  ;; (require 'helm-config)
+  ;; (global-set-key (kbd "C-c h") 'helm-command-prefix)
+
+#+end_src
+
+** python
+#+begin_src emacs-lisp
+
+  ;; ;; ---------------------
+  ;; ;; ------ PYTHON -------
+  ;; ;; ---------------------
+
+  ;; (add-hook 'python-mode-hook 'eglot-ensure) 
+
+  ;; ;; enable elpy
+  ;; ;; (elpy-enable)
+
+  ;; ;; (when (require 'flycheck nil t)
+  ;; ;;   (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  ;; ;;   (add-hook 'elpy-mode-hook 'flycheck-mode))
+  ;; ;; (add-hook 'elpy-mode-hook (lambda () (highlight-indentation-mode -1)))
+
+  ;; ;; :init (global-flycheck-mode)
+
+
+#+end_src
+
+** remove messages buffer
+#+begin_src emacs-lisp
+
+  ;; removes *messages* from the buffer
+  ;; (setq-default message-log-max nil)
+  ;; (kill-buffer "*Messages*")
+
+#+end_src
+
+** customize modeline
+# #+begin_src emacs-lisp
+#   ;;;;;;;;;;;;;;;;;;;;;;;;
+#   ;;;;;;; modeline ;;;;;;;
+#   ;;;;;;;;;;;;;;;;;;;;;;;;
+#   (require 'diminish)
+#   (eval-after-load "projectile" '(diminish 'projectile-mode " 󰑣"))
+#   (eval-after-load "flycheck" '(diminish 'flycheck-mode " φ"))
+#   (eval-after-load "company" '(diminish 'company-mode " c"))
+#   (diminish 'visual-line-mode " λ")
+
+#   (setq-default mode-line-format
+# 		(quote
+# 		 (
+# 		  "  "
+# 		  mode-line-buffer-identification
+# 		  ""		  
+# 		  )))
+#   (setq-default header-line-format nil)
+
+# #+end_src
+
+** save sesions between launches
+
+#+begin_src emacs-lisp
+
+  ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;; ;;          Save sessions between launches          ;;
+  ;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+  ;; (setq desktop-dirname         "~/.emacs.d/desktop/"
+  ;;       desktop-base-file-name      "emacs.desktop"
+  ;;       desktop-load-locked-desktop nil
+  ;;       desktop-auto-save-timeout   30)
+
+  ;; (setq desktop-path (list "~/.emacs.d/desktop/"))
+  ;; (setq desktop-dirname "~/.emacs.d/desktop/")
+  ;; (setq desktop-restore-eager 5)
+  ;; (setq desktop-load-locked-desktop t)
+
+
+  ;; (setq desktop-path (list "~/.emacs.d/desktop/"))
+  ;; (defconst my-savefile-dir (expand-file-name "savefile" user-emacs-directory))  ;; from https://old.reddit.com/r/emacs/comments/aoof3m/can_i_disable_asking_to_save_directory_for_desktop/
+
+  ;; (desktop-save-mode 1)
+  ;; (desktop-read)
+
+  ;; ;; Initial buffer
+  ;; (setq initial-buffer-choice nil)
+
+  ;; ;; Text mode is initial mode
+  ;; (setq initial-major-mode 'org-mode)
+
+#+end_src
+
+** org-journal
+
+#+begin_src emacs-lisp
+;;  (require 'org-journal)
+;;  (setq org-journal-dir "~/documents/org/org-journal/")
+;;  (setq org-journal-file-type 'monthly)
+#+end_src
+
+** eglot
+# #+begin_src emacs-lisp
+#     (require 'eglot)
+
+#     (defgroup eglot-grammarly nil
+#       "Settings for the Grammarly Language Server.
+
+#     Link: https://github.com/znck/grammarly"
+#       :group 'eglot
+#       :link '(url-link "https://github.com/emacs-grammarly/eglot-grammarly"))
+
+#     (defcustom eglot-grammarly-active-modes
+#       '(text-mode latex-mode org-mode markdown-mode)
+#       "List of major mode that work with Grammarly."
+#       :type 'list
+#       :group 'eglot-grammarly)
+
+#     (defun eglot-grammarly--server-command ()
+#       "Generate startup command for Grammarly language server."
+#       (list 'eglot-grammarly-server "grammarly-languageserver" "--stdio"))
+
+#     (add-to-list 'eglot-server-programs
+# 		 `(,eglot-grammarly-active-modes . ,(eglot-grammarly--server-command)))
+
+#     (defclass eglot-grammarly-server (eglot-lsp-server) ()
+#       :documentation "A custom class for grammarly langserver.")
+
+#     (defconst eglot-grammarly-client-id "client_BaDkMgx4X19X9UxxYRCXZo"
+#       "Client ID is required for language server's activation.")
+
+#     (cl-defmethod eglot-initialization-options ((server eglot-grammarly-server))
+#       "Passes through required grammarly initialization options"
+# 	(list :clientId eglot-grammarly-client-id))
+
+#   (provide 'eglot-grammarly)
+#   (add-hook 'text-mode-hook (lambda ()
+#          		     (require 'eglot-grammarly)
+#           		     (call-interactively #'eglot)))
+# #+end_src

@@ -925,6 +925,12 @@ add paragraph navigation to M- ... keys
   (interaction-log-mode +1)
 #+end_src
 
+* mmm
+#+begin_src emacs-lisp
+  (use-package mmm-mode
+    :ensure t)
+#+end_src
+
 * disabled
 This is a dump for old disabled config snippets
 

@@ -465,7 +465,6 @@ Slightly modified code from ref
 	  org-roam-reflinks-section))
 #+end_src
 
-
 ** roam and org tags
 
 #+begin_src emacs-lisp
@@ -555,11 +554,11 @@ Slightly modified code from ref
     :ensure t
     :commands lsp-ui-mode
     :config
-    (setq lsp-ui-sideline-show-hover t)
-    (setq lsp-ui-sideline-show-diagnostics t)
-    (setq lsp-ui-sideline-show-code-actions t)
-    (setq lsp-ui-doc-enable t)
-    (setq lsp-ui-doc-show-with-cursor t))
+    (setq lsp-ui-sideline-show-hover t
+	  lsp-ui-sideline-show-diagnostics t
+	  lsp-ui-sideline-show-code-actions t
+	  lsp-ui-doc-enable nil
+	  lsp-ui-doc-show-with-cursor nil))
 #+end_src
 
 ** lisp & clojure
